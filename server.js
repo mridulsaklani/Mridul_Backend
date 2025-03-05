@@ -6,6 +6,7 @@ const Users = require('./routes/users')
 const CookieParser = require('cookie-parser')
 const PORT = 5000;
 const quoteRoute = require('./routes/quote')
+const timelineRoute = require("./routes/timeline")
 
 
 require('dotenv').config();
@@ -18,7 +19,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use(CookieParser())
 
 app.use('/api/user', Users)
-app.use('/api/quote',  quoteRoute )
+app.use('/api/quote', quoteRoute)
+app.use("/api/timeline", timelineRoute)
 
 MongoDB()
 

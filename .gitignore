@@ -1,0 +1,28 @@
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+.env*
+.git
+
+/package-lock.json
+/package.json
+
+/README.md
+
+# testing
+/coverage
+
+# next.js    
+/.next/
+/out/    
+
+# production
+/build
+
+# misc
+.DS_Store   

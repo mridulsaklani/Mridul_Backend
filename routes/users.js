@@ -1,14 +1,14 @@
 const express = require("express");
 const router = express.Router();
-const {handleUserPost,findUser, LoginUser } = require('../controllers/users')
+const {handleUserPost,findUser, LoginUser, logoutUser,  upload} = require('../controllers/users')
 
 
 
-router.post("/",handleUserPost)
+router.post("/", upload.single("image") ,handleUserPost)
 router.post("/login", LoginUser)
+router.post("/logout", logoutUser)
 
-
-router.get("/:id",findUser)
+router.get("/userdata",findUser)
 
 
 module.exports = router

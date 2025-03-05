@@ -8,7 +8,7 @@ function setUser(payload) {
 }
 
 function getUser(token) {
-    if(!token) return null
+    if(!token) return null;
     try {
         
         return jwt.verify(token, process.env.JWT_SECRET);
@@ -19,4 +19,4 @@ function getUser(token) {
 
 }
 
-module.exports = { setUser, getUser };
+module.exports = {setUser, getUser};
