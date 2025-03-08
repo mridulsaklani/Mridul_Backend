@@ -1,6 +1,8 @@
 const express = require("express");
 const router = express.Router();
 
-router.get("/",)
+const {addTimeline, upload} = require('../controllers/timeline')
 
-module.exports = router
+router.post("/",  upload.array("images") , addTimeline)
+
+module.exports = router;

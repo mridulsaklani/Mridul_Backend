@@ -9,8 +9,7 @@
 .env*
 .git
 
-/package-lock.json
-/package.json
+.gitignore
 
 /README.md
 
