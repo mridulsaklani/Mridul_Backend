@@ -12,7 +12,8 @@ const timelineRoute = require("./routes/timeline")
 require('dotenv').config();
 app.use(express.json());
 app.use(cors({
-    origin: "*", 
+    origin: "https://www.mridulsinghsaklani.com/", 
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
     credentials: true,
   }));
 app.use(express.urlencoded({ extended: true }));
