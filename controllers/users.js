@@ -6,6 +6,7 @@ const multer = require('multer');
 
 const {setUser,getUser} = require('../service/auth');
 const exp = require('constants');
+const path = require('path');
 
 
 const storage = multer.diskStorage({
@@ -61,7 +62,9 @@ const LoginUser = async (req, res) => {
   
       res.cookie("token", token , {
         httpOnly: true,
-        sameSite: "strict",
+        secure: true,
+        sameSite: "None",
+        path: "/",
         expires: new Date(Date.now() + 15  * 60 * 1000)
       });
   
