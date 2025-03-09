@@ -9,15 +9,18 @@ const quoteRoute = require('./routes/quote')
 const timelineRoute = require("./routes/timeline")
 
 
+
 require('dotenv').config();
 app.use(express.json());
 app.use(cors({
-    origin: "https://www.mridulsinghsaklani.com/", 
+    origin: "https://www.mridulsinghsaklani.com", 
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
     credentials: true,
-  }));
+    allowedHeaders: ["Content-Type", "Authorization"],
+}));
 app.use(express.urlencoded({ extended: true }));
 app.use(CookieParser())
+app.options("*", cors());
 
 app.use('/api/user', Users)
 app.use('/api/quote', quoteRoute)
