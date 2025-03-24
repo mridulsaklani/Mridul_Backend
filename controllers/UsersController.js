@@ -25,7 +25,7 @@ const getUsers = async (req, res) => {
   try {
     const response = await Users.find({})
     if(!response) return res.status(404).json({message: "Users not found"});
-    res.status(200).json(response)
+    res.status(200).json(response);
   }
   catch(error){
     console.error(error);

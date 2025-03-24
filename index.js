@@ -14,8 +14,8 @@ const path = require("path");
 require('dotenv').config();
 app.use(express.json());
 app.use(cors({
-    origin: "https://www.mridulsinghsaklani.com", 
-    // origin: "http://localhost:3000",
+    // origin: "https://www.mridulsinghsaklani.com", 
+    origin: "http://localhost:3000",
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
     credentials: true,
     allowedHeaders: ["Content-Type", "Authorization"],
