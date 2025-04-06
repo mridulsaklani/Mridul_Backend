@@ -28,6 +28,7 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use('/api/user', Users)
 app.use('/api/quote', quoteRoute)
 app.use("/api/timeline", timelineRoute)
+// app.use('/api/blog', )
 
 MongoDB()
 

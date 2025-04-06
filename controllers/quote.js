@@ -1,4 +1,4 @@
-const quoteSchema = require('../models/quote');
+const quoteSchema = require('../models/Quote.model');
 
 const addQuote = async(req,res)=>{
     try{

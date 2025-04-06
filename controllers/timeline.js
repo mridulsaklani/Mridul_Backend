@@ -1,4 +1,4 @@
-const timelineSchema = require("../models/timelineSchema");
+const timelineSchema = require("../models/Timelines.model");
 
 const multer = require("multer");
 

@@ -1,4 +1,4 @@
-const Users = require('../models/users');
+const Users = require('../models/User.model');
 const bcrypt = require('bcrypt');
 const mongoose = require('mongoose');
 const multer = require('multer');
