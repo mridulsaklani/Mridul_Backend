@@ -1,12 +1,8 @@
-const Users = require('../models/User.model');
-const bcrypt = require('bcrypt');
+const UserSchema = require('../models/User.model');
+
 const mongoose = require('mongoose');
 const multer = require('multer');
 
-
-const {setUser,getUser} = require('../service/auth');
-const exp = require('constants');
-const path = require('path');
 
 
 const storage = multer.diskStorage({
@@ -21,9 +17,29 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage, limits: { fileSize: 10 * 1024 * 1024 }, });
 
 
+// Generate access and refresh token
+
+const generateAccessAndRefreshToken = async(userId)=>{
+   try {
+      if(!mongoose.Types.ObjectId.isValid(userId)) return res.status(400).json({message:"Invalid mongoose Id"})
+      const User = await UserSchema.findById(userId);
+      const accessToken = await User.generateAccessToken();
+      const refreshToken = await User.generateRefreshToken();
+
+      User.refreshToken = refreshToken
+
+      await User.save();
+
+      return {accessToken, refreshToken}
+
+   } catch (error) {
+    console.error(error)
+   }
+}
+
 const getUsers = async (req, res) => {
   try {
-    const response = await Users.find({})
+    const response = await UserSchema.find({}).select('-password -refreshToken').sort({createdAt: -1})
     if(!response) return res.status(404).json({message: "Users not found"});
     res.status(200).json(response);
   }
@@ -41,143 +57,61 @@ const handleUserPost = async (req, res) => {
             return res.status(400).json({ error: "All fields are required" });
         }
 
-        const hashedPassword = await bcrypt.hash(password, 10);
+        const userExist = await UserSchema.findOne({email}).lean();
 
-        const user = await Users.create({ name, email, phone, password: hashedPassword, dob, image: req.file ? req.file.path : '' });
+        if(userExist) return res.json(400).json({message: "Use already exist"});
 
-        return res.status(201).json({ message: "User created successfully", user });
-    } catch (err) {
-        console.error(err);
-        return res.status(500).json({ error: "Internal server error" });
-    }
-};
+        const response = await UserSchema.create({name, email, phone, image: req.file.path, password, dob});
 
+        if(!response) return res.status(400).json({message: "Filed issue! user not created"});
 
-const LoginUser = async (req, res) => {
-    try {
-      const { email, password } = req.body;
-      if (!email || !password) {
-        return res.status(400).json({ error: "Email and password are required" });
-      }
-  
-      const user = await Users.findOne({ email });
-      if (!user) {
-        return res.status(404).json({ error: "User not found" });
-      }
-  
-      const isPasswordValid = await bcrypt.compare(password, user.password);
-      if (!isPasswordValid) {
-        return res.status(401).json({ error: "Invalid password" });
-      }
-  
-     
-      const token = setUser(user);
-  
-      res.cookie("token", token , {
-        httpOnly: true,
-        secure: true,
-        sameSite: "None",
-        path: "/",
-        expires: new Date(Date.now() + 15  * 60 * 1000)
-      });
-  
-      return res.status(200).json({ message: "Login successful", token, user: { id: user._id, email: user.email } });
-    } catch (err) {
-      console.error("Error in LoginUser:", err.message);
-      return res.status(500).json({ error: "Internal server error" });
-    }
-  };
-  
-
-  const logoutUser = async(req, res) => {
-    try {
-      
-       res.clearCookie("token", {
-        httpOnly: true,
-        sameSite: "strict",
-        secure: process.env.NODE_ENV === "production",
-        path:"/"
-       })
-
-       return res.status(200).json({message: "Cookie deleted successfully"})
+        res.status(201).json({message: "User created successfully"});
+        
+        
     } catch (error) {
-      console.error(error.message);
-      res.status(500).json({message: "internal server error"})
-    }
-  }
-  
-
-// Handler for finding a user by ID
-const findUser = async (req, res) => {
-    try {
-        
-        const token = req.cookies.token;
-        if(!token) return res.status(400).json({message: "Token not exist"})
-
-
-        const tokenUser = getUser(token);
-        if (!tokenUser) {
-          return res.status(401).json({ error: "Unauthorized" });
-        }
-
-        const id = tokenUser._id;
-
-        if (!mongoose.Types.ObjectId.isValid(id)) {
-            return res.status(400).json({ error: "Invalid user ID format"});
-        }
-        
-        const user = await Users.findById(id);
-        if (!user) {
-            return res.status(404).json({ error: "User not found"});
-        }
-
-        return res.status(200).json(user);
-
-    } catch (err) {
-        console.error(err);
-        return res.status(500).json({ error: "Internal server error" });
+        console.error(error)
+        res.status(500).json({message: "Internal server error"})
     }
 };
 
 
-const updateUser = async (req, res) => {
-  try {
-    const token = req.cookies.token;
-    if (!token) return res.status(400).json({ message: "Cookie not found" });
+const userLogin = async(req,res) =>{
+   try {
 
-    const user = getUser(token);
-    if (!user) return res.status(404).json({ message: "User not found" });
 
-    const id = user._id;
-    if (!mongoose.Types.ObjectId.isValid(id)) return res.status(400).json({ message: "Invalid user ID" });
+    const {email, password} = req.body;
 
-    const { name, email, phone, dob } = req.body;
-    const image = req.file ? req.file.path : null;  
+    if(!email || !password) return res.status(400).json({message: "Field data is missing"});
 
-    const updateFields = {};
-    if (name) updateFields.name = name;
-    if (email) updateFields.email = email;
-    if (phone) updateFields.phone = phone;
-    if (dob) updateFields.dob = dob;
-    if (image) updateFields.image = image;
+    const user = await UserSchema.findOne({email})
 
-    const response = await Users.findByIdAndUpdate(id, { $set: updateFields }, { new: true, runValidators: true });
-    if (!response) return res.status(404).json({ message: "User not found and update failed" });
+    const checkPassword = await user.isPasswordCorrect(password);
 
-    res.status(200).json({ message: "User updated successfully" });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Internal server error" });
-  }
-};
+    if(!checkPassword) return res.status(401).json({message: "Your password is incorrect you are not authorized"});
+
+    const {accessToken, refreshToken} = await generateAccessAndRefreshToken(user._id);
+
+    const options={
+      httpOnly: true,
+      secure: true
+    }
+
+    res.status(201).cookie("accessToken", accessToken, options).cookie("refreshToken", refreshToken, options).json({message: "user created successfully", user});
+
+
+   } catch (error) {
+    console.error(error)
+    res.status(500).json({message: "Internal server error"})
+   }
+}
+
+
 
 
 module.exports = {
   getUsers,
-    handleUserPost,
-    LoginUser,
-    findUser,
-    upload,
-    logoutUser,
-    updateUser
+  userLogin,
+  handleUserPost,
+  upload
+
 };

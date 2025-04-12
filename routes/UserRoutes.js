@@ -1,16 +1,16 @@
 const express = require("express");
 const router = express.Router();
-const {handleUserPost,findUser, LoginUser, logoutUser,  upload, updateUser} = require('../controllers/UsersController.js')
+const {handleUserPost,userLogin,  upload, updateUser} = require('../controllers/UsersController.js');
+const verifyJWT = require('../middlewares/jwtVerify.js')
 
 
 
-router.post("/", upload.single("image") ,handleUserPost)
-router.post("/login", LoginUser)
+router.post("/add", upload.single("image") ,handleUserPost);
+router.route('/login').post(userLogin);
 
-router.post("/logout", logoutUser)
 
-router.get("/userdata",findUser)
-router.patch("/", upload.single("image"), updateUser)
+
+
 
 
 module.exports = router

@@ -1,5 +1,5 @@
 const express = require('express')
-const {addQuote, getQuote} = require('../controllers/quote')
+const {addQuote, getQuote} = require('../controllers/QuoteController')
 const router = express.Router()
 
 
