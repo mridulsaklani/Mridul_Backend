@@ -49,7 +49,7 @@ const getUsers = async (req, res) => {
 }
 
 // Handler for creating a user
-const handleUserPost = async (req, res) => {
+const userSignUP = async (req, res) => {
     try {
         const { name, email, phone, password, dob } = req.body;
 
@@ -78,12 +78,13 @@ const handleUserPost = async (req, res) => {
 const userLogin = async(req,res) =>{
    try {
 
-
     const {email, password} = req.body;
 
     if(!email || !password) return res.status(400).json({message: "Field data is missing"});
 
-    const user = await UserSchema.findOne({email})
+    const user = await UserSchema.findOne({email});
+
+    if(!user) return res.status(400).json({message: "User not exist"});
 
     const checkPassword = await user.isPasswordCorrect(password);
 
@@ -96,7 +97,7 @@ const userLogin = async(req,res) =>{
       secure: true
     }
 
-    res.status(201).cookie("accessToken", accessToken, options).cookie("refreshToken", refreshToken, options).json({message: "user created successfully", user});
+    res.status(200).cookie("accessToken", accessToken, options).cookie("refreshToken", refreshToken, options).json({message: "user created successfully", user});
 
 
    } catch (error) {
@@ -105,13 +106,38 @@ const userLogin = async(req,res) =>{
    }
 }
 
+const userLogout = async(req,res)=>{
+  try {
+    
+    const id = req.user?._id
+
+    const loggedUser = await UserSchema.findByIdAndUpdate(id,{
+      $set:{isActive: false, refreshToken: undefined}
+    }, {new: true});
+
+    if(!loggedUser) return res.status(400).json({message: "user not user logout because of DB error"})
+
+
+    const options={
+      httpOnly: true,
+      secure: true
+    }
+
+    res.status(200).clearCookie("accessToken", options).clearCookie('refreshToken', options).json({message: "user Logout successfully"})
+    
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({message: "Internal server error"})
+  }
+}
 
 
 
 module.exports = {
   getUsers,
   userLogin,
-  handleUserPost,
+  userSignUP,
+  userLogout,
   upload
 
 };

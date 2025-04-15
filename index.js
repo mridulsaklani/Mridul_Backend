@@ -15,6 +15,7 @@ const path = require("path");
 const quoteRoute = require('./routes/quote')
 const timelineRoute = require("./routes/timeline")
 const UsersRoute = require('./routes/UserRoutes')
+const VerifyAuth = require('./routes/AuthRouter')
 
 //Routes End
 
@@ -35,7 +36,7 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use('/api/user', UsersRoute)
 app.use('/api/quote', quoteRoute)
 app.use("/api/timeline", timelineRoute)
-// app.use('/api/blog', )
+app.use('/api/auth', VerifyAuth)
 
 MongoDB()
 

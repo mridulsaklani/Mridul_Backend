@@ -8,13 +8,17 @@ const checkForAuthentication = async (req, res, next) => {
         return res.status(401).json({ error: "Unauthorized" });
     }
 
-    const user = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+    const verifyJwt = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
     
 
-    if (!user) {
+    if (!verifyJwt) {
         return res.status(401).json({ error: "Unauthorized" });
 
     }
+
+    const user = await userSchema.findById(verifyJwt._id).select("-password -refreshToken");
+
+    if(!user) return res.status(404).json({message: "User not found"});
 
 
     req.user = user;
