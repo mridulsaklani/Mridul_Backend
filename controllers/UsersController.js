@@ -57,11 +57,13 @@ const userSignUP = async (req, res) => {
             return res.status(400).json({ error: "All fields are required" });
         }
 
-        const userExist = await UserSchema.findOne({email}).lean();
+        const userExist = await UserSchema.findOne({email});
 
-        if(userExist) return res.json(400).json({message: "Use already exist"});
+        if(userExist) return res.status(400).json({message: "Use already exist, use another email"});
 
-        const response = await UserSchema.create({name, email, phone, image: req.file.path, password, dob});
+      
+
+        const response = await UserSchema.create({name, email, phone, image: req.file.path || "", password, dob});
 
         if(!response) return res.status(400).json({message: "Filed issue! user not created"});
 
@@ -84,11 +86,11 @@ const userLogin = async(req,res) =>{
 
     const user = await UserSchema.findOne({email});
 
-    if(!user) return res.status(400).json({message: "User not exist"});
+    if(!user) return res.status(400).json({message: "User not exist, please check your mail"});
 
     const checkPassword = await user.isPasswordCorrect(password);
 
-    if(!checkPassword) return res.status(401).json({message: "Your password is incorrect you are not authorized"});
+    if(!checkPassword) return res.status(401).json({message: "Your password is incorrect, please check your password"});
 
     const {accessToken, refreshToken} = await generateAccessAndRefreshToken(user._id);
 
