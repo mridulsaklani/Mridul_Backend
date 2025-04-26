@@ -21,22 +21,30 @@ const upload = multer({ storage: storage, limits: { fileSize: 10 * 1024 * 1024 }
 
 // Generate access and refresh token
 
-const generateAccessAndRefreshToken = async(userId)=>{
-   try {
-      
-      const User = await UserSchema.findById(userId);
-      const accessToken = await User.generateAccessToken();
-      const refreshToken = await User.generateRefreshToken();
+const generateAccessAndRefreshToken = async(userId) => {
+  try {
+     if(!mongoose.Types.ObjectId.isValid(userId)) {
+        throw new Error("Invalid mongoose Id");
+     }
 
-      User.refreshToken = refreshToken
+     const user = await UserSchema.findById(userId);
 
-      await User.save();
+     if(!user) {
+        throw new Error("User not found");
+     }
 
-      return {accessToken, refreshToken}
+     const accessToken = user.generateAccessToken();
+     const refreshToken = user.generateRefreshToken();
 
-   } catch (error) {
-    console.error(error)
-   }
+     user.refreshToken = refreshToken;
+     await user.save();
+
+     return { accessToken, refreshToken };
+
+  } catch (error) {
+     console.error("Error in generateAccessAndRefreshToken:", error);
+     throw error;  
+  }
 }
 
 
@@ -146,13 +154,6 @@ const userLogin = async(req,res) =>{
 
     if(!user) return res.status(400).json({message: "User not exist, please check your mail"});
 
-    // if(user.emailVerified !== true) {
-    //   const name = user.name;
-    //   const otp = user.otp;
-    //    await verifyEmail(name,otp,email);
-    //    return res.status(400).json({message: "Email is not verified please check email and verify otp", emailVerified: false})
-    //   }
-
     const checkPassword = await user.isPasswordCorrect(password);
 
     if(!checkPassword) return res.status(401).json({message: "Your password is incorrect, please check your password"});
@@ -161,7 +162,8 @@ const userLogin = async(req,res) =>{
 
     const options = {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production", 
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict", 
     };
 
     res.status(200).cookie("accessToken", accessToken, options).cookie("refreshToken", refreshToken, options).json({message: "user Login successfully", user});
