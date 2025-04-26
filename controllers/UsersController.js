@@ -146,12 +146,12 @@ const userLogin = async(req,res) =>{
 
     if(!user) return res.status(400).json({message: "User not exist, please check your mail"});
 
-    if(user.emailVerified !== true) {
-      const name = user.name;
-      const otp = user.otp;
-       await verifyEmail(name,otp,email);
-       return res.status(400).json({message: "Email is not verified please check email and verify otp", emailVerified: false})
-      }
+    // if(user.emailVerified !== true) {
+    //   const name = user.name;
+    //   const otp = user.otp;
+    //    await verifyEmail(name,otp,email);
+    //    return res.status(400).json({message: "Email is not verified please check email and verify otp", emailVerified: false})
+    //   }
 
     const checkPassword = await user.isPasswordCorrect(password);
 
@@ -159,12 +159,13 @@ const userLogin = async(req,res) =>{
 
     const {accessToken, refreshToken} = await generateAccessAndRefreshToken(user._id);
 
-    const options={
+    const options = {
       httpOnly: true,
-      secure: true
-    }
+      secure: process.env.NODE_ENV === "production", 
+      sameSite: "strict"
+    };
 
-    res.status(200).cookie("accessToken", accessToken, options).cookie("refreshToken", refreshToken, options).json({message: "user created successfully", user});
+    res.status(200).cookie("accessToken", accessToken, options).cookie("refreshToken", refreshToken, options).json({message: "user Login successfully", user});
 
 
    } catch (error) {
