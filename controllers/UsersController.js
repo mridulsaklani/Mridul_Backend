@@ -162,7 +162,6 @@ const userLogin = async(req,res) =>{
     const options = {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production", 
-      sameSite: "strict"
     };
 
     res.status(200).cookie("accessToken", accessToken, options).cookie("refreshToken", refreshToken, options).json({message: "user Login successfully", user});
