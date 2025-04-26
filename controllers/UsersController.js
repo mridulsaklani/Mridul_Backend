@@ -3,6 +3,8 @@ const UserSchema = require('../models/User.model');
 const mongoose = require('mongoose');
 const multer = require('multer');
 
+const verifyEmail = require("../service/mailer")
+
 
 
 const storage = multer.diskStorage({
@@ -37,6 +39,11 @@ const generateAccessAndRefreshToken = async(userId)=>{
    }
 }
 
+
+const generateOTP = ()=>{
+   return Math.floor(100000 + Math.random() * 900000)
+}
+
 const getUsers = async (req, res) => {
   try {
     const response = await UserSchema.find({}).select('-password -refreshToken').sort({createdAt: -1})
@@ -62,12 +69,17 @@ const userSignUP = async (req, res) => {
         if(userExist) return res.status(400).json({message: "Use already exist, use another email"});
 
       
+        const otp = generateOTP();
 
-        const response = await UserSchema.create({name, email, phone, image: req.file.path || "", password, dob});
+        const response = await UserSchema.create({name, email, phone, image: req.file.path || "", password, dob, otp});
 
         if(!response) return res.status(400).json({message: "Filed issue! user not created"});
 
-        res.status(201).json({message: "User created successfully"});
+
+        await verifyEmail(name, otp, email);
+
+
+        res.status(201).json({message: "User created successfully, Verify otp send"});
         
         
     } catch (error) {
@@ -75,6 +87,52 @@ const userSignUP = async (req, res) => {
         res.status(500).json({message: "Internal server error"})
     }
 };
+
+
+const verifyOtp = async (req, res) => {
+  try {
+    const { otp } = req.body;
+
+   
+    if (!otp || isNaN(otp)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid or missing OTP. It should be a 6-digit number.",
+      });
+    }
+
+    
+    const user = await UserSchema.findOne({ otp: Number(otp) });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "Invalid or expired OTP.",
+      });
+    }
+
+    
+    user.emailVerified = true;
+    user.otp = null;
+ 
+
+    await user.save();
+
+   
+    return res.status(200).json({
+      success: true,
+      message: "Email verified successfully.",
+     
+    });
+
+  } catch (error) {
+    console.error(error.message);
+    return res.status(500).json({
+      success: false, message: "Internal server error" });
+  }
+};
+
+
 
 
 const userLogin = async(req,res) =>{
@@ -85,6 +143,13 @@ const userLogin = async(req,res) =>{
     if(!email || !password) return res.status(400).json({message: "Field data is missing"});
 
     const user = await UserSchema.findOne({email});
+
+    if(user.emailVerified !== true) {
+      const name = user.name;
+      const otp = user.otp;
+       await verifyEmail(name,otp,email);
+       return res.status(400).json({message: "Email is not verified please check email and verify otp", emailVerified: false})
+      }
 
     if(!user) return res.status(400).json({message: "User not exist, please check your mail"});
 
@@ -140,6 +205,7 @@ module.exports = {
   userLogin,
   userSignUP,
   userLogout,
+  verifyOtp,
   upload
 
 };
