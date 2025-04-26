@@ -23,7 +23,7 @@ const upload = multer({ storage: storage, limits: { fileSize: 10 * 1024 * 1024 }
 
 const generateAccessAndRefreshToken = async(userId)=>{
    try {
-      if(!mongoose.Types.ObjectId.isValid(userId)) return res.status(400).json({message:"Invalid mongoose Id"})
+      
       const User = await UserSchema.findById(userId);
       const accessToken = await User.generateAccessToken();
       const refreshToken = await User.generateRefreshToken();
@@ -144,14 +144,14 @@ const userLogin = async(req,res) =>{
 
     const user = await UserSchema.findOne({email});
 
+    if(!user) return res.status(400).json({message: "User not exist, please check your mail"});
+
     if(user.emailVerified !== true) {
       const name = user.name;
       const otp = user.otp;
        await verifyEmail(name,otp,email);
        return res.status(400).json({message: "Email is not verified please check email and verify otp", emailVerified: false})
       }
-
-    if(!user) return res.status(400).json({message: "User not exist, please check your mail"});
 
     const checkPassword = await user.isPasswordCorrect(password);
 
