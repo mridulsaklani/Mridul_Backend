@@ -2,6 +2,7 @@ from fastapi import FastAPI
 import fastapi
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
+import os
 
 from app.router.prompt_routes import router as prompt_router
 
@@ -9,9 +10,10 @@ load_dotenv()
 
 app = FastAPI()
 
+
+
 origins = [
-    "http://localhost:5173",  
-    "http://127.0.0.1:5173",  
+    os.getenv('CLIENT_URL')
     
 ]
 
