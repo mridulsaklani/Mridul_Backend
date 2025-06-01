@@ -1,38 +1,58 @@
 import os
+import logging
 from fastapi import Response, HTTPException, status
 from dotenv import load_dotenv
 import google.generativeai as genai
 
+
+logging.basicConfig(level=logging.INFO)
+
+
 load_dotenv()
-
-
 api_key = os.getenv('AISTUDIO_API_KEY')
 if not api_key:
     raise RuntimeError("Missing AISTUDIO_API_KEY in environment variables")
 
+
 genai.configure(api_key=api_key)
 
 
-
-
 async def handle_incoming_prompt(response: Response, content: dict):
-    model = genai.GenerativeModel("gemini-1.5-flash")
     prompt = content.get('content')
-
-    if not prompt:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='No prompt content provided')
+    if not prompt or not isinstance(prompt, str):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Prompt must be a non-empty string."
+        )
 
     try:
-        result = model.generate_content(prompt)
+        # logging.info(f"Prompt received: {prompt}")
+        
+        model = genai.GenerativeModel("gemini-1.5-flash")
 
-        if not result or not hasattr(result, 'text'):
-            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail='Invalid response from model')
+      
+        result = model.generate_content([
+            """If anyone asks who is your developer, and who develop you,  say: Mridul Singh Saklani is my developer. 
+            anybody ask you who is mridul saklani then say 'Mridul singh saklani is the Software Developer and work in Artificial Intelligence, Machine Learning and MERN Stack. For more information visit https://mridulsinghsaklani.com 
+            """,
+            prompt
+        ])
+
+        if not result or not hasattr(result, "text"):
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="No valid text response from Gemini model."
+            )
 
         response.status_code = status.HTTP_200_OK
         return {
-            'message': 'Response retrieved successfully',
-            'res': result.text
+            "message": "Response retrieved successfully",
+            "res": result.text
         }
 
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+        logging.error(f"Error during Gemini request: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Gemini Error: {str(e)}"
+        )
