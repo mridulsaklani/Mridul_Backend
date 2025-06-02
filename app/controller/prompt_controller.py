@@ -9,7 +9,7 @@ logging.basicConfig(level=logging.INFO)
 
 load_dotenv()
 
-api_key = os.getenv("GOOGLE_GEMINI_API_KEY")
+api_key = os.getenv("API_KEY")
 if not api_key:
     raise RuntimeError("Missing GOOGLE_GEMINI_API_KEY in environment variables")
 
