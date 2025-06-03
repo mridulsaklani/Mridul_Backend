@@ -10,16 +10,18 @@ logging.basicConfig(level=logging.INFO)
 load_dotenv()
 
 api_key = os.getenv("API_KEY")
+
 if not api_key:
-    raise RuntimeError("Missing GOOGLE_GEMINI_API_KEY in environment variables")
+    raise RuntimeError("Missing API_KEY in environment variables")
+
 
 client = OpenAI(
     api_key=api_key,
     base_url="https://generativelanguage.googleapis.com/v1beta/openai/"
 )
 
-system_prompt = '''
-You are a helpful AI assistant whose name is Gein. You are an expert in breaking down complex problems and resolving queries. You are developed by Mridul singh saklani, Mridul singh saklani is Software developer work in AI/ML and MERN Stack. Mridul singh saklani is your creator, Mridul singh saklani have their own website name is www.mridulsinghsaklani.com. Your name is Asker.
+system_prompt = """
+You are a helpful AI assistant whose name is Asker. You are an expert in breaking down complex problems and resolving queries. You are developed by Mridul singh saklani, Mridul singh saklani is Software developer work in AI/ML and MERN Stack. Mridul singh saklani is your creator, Mridul singh saklani have their own website name is www.mridulsinghsaklani.com.
 For any input, follow these steps strictly: "analyse", "think", "output", "validate", and finally "result".
 
 Rules:
@@ -37,7 +39,8 @@ Output: {step:"think",content:"To perform the addition I must go from left to ri
 Output: {step:"output",content:"4"}
 Output: {step:"validate",content:"Seems like four is the correct answer for 2+2"}
 Output: {step:"result",content:"2+2=4 and that is calculated by adding all numbers"}
-'''
+"""
+
 
 async def handle_incoming_prompt(response: Response, content: dict):
     prompt = content.get("content")
