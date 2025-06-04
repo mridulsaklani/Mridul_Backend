@@ -22,8 +22,7 @@ const VerifyAuth = require('./routes/AuthRouter')
 
 app.use(express.json());
 app.use(cors({
-    // origin: "https://www.mridulsinghsaklani.com", 
-    origin: "http://localhost:3000",
+    origin: process.env.CLIENT_URL,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
     credentials: true,
     allowedHeaders: ["Content-Type", "Authorization"],
