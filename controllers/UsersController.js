@@ -23,9 +23,6 @@ const upload = multer({ storage: storage, limits: { fileSize: 10 * 1024 * 1024 }
 
 const generateAccessAndRefreshToken = async(userId) => {
   try {
-     if(!mongoose.Types.ObjectId.isValid(userId)) {
-        throw new Error("Invalid mongoose Id");
-     }
 
      const user = await UserSchema.findById(userId);
 
@@ -162,8 +159,8 @@ const userLogin = async(req,res) =>{
 
     const options = {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict", 
+      secure: true,
+      sameSite: 'None', 
     };
 
     res.status(200).cookie("accessToken", accessToken, options).cookie("refreshToken", refreshToken, options).json({message: "user Login successfully", user});
@@ -189,7 +186,8 @@ const userLogout = async(req,res)=>{
 
     const options={
       httpOnly: true,
-      secure: true
+      secure: true,
+      sameSite: 'None'
     }
 
     res.status(200).clearCookie("accessToken", options).clearCookie('refreshToken', options).json({message: "user Logout successfully"})
