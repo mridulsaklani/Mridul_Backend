@@ -140,7 +140,7 @@ const verifyOtp = async (req, res) => {
       });
     }
 
-    if(Number(user.otp) !== Number(otp)) return res.status(400).json({message: 'Invalid OTP'})
+    if(Number(user.otp) !== Number(otp)) return res.status(400).json({message: 'Invalid OTP, please try again'})
 
     
     user.emailVerified = true;
