@@ -9,24 +9,19 @@ cloudinary.config({
   api_secret: process.env.CLOUD_API_SECRET,
 });
 
- const upload = async (file) => {
+ const CloudUpload = async (file) => {
     try {
+      if(!file) return null
       const result = await cloudinary.uploader.upload(file, {
-        folder: 'uploads',
+        public_id: Date.now(),
+        folder: 'user',
       });
-      console.log(result);
+      
+      return result
     } catch (error) {
       console.error(error);
+      return null
     }
   };
-//   const uploadResult = await cloudinary.uploader
-//        .upload(
-//            'https://res.cloudinary.com/demo/image/upload/getting-started/shoes.jpg', {
-//                public_id: 'shoes',
-//            }
-//        )
-//        .catch((error) => {
-//            console.log(error);
-//        });
-    
-  
+
+  module.exports = CloudUpload
