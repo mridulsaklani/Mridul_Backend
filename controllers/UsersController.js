@@ -216,7 +216,7 @@ const userLogout = async(req,res)=>{
       sameSite: 'None'
     }
 
-    res.status(200).clearCookie("accessToken", options).clearCookie('refreshToken', options).json({message: "user Logout successfully"})
+    res.status(200).clearCookie("accessToken", options).clearCookie('refreshToken', options).json({message: "User Logout successfully"})
     
   } catch (error) {
     console.error(error);
@@ -228,7 +228,7 @@ const userLogout = async(req,res)=>{
 
 module.exports = {
   getUsers,
- getSingleUser,
+  getSingleUser,
   userLogin,
   userSignUP,
   userLogout,
