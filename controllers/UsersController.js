@@ -82,9 +82,9 @@ const getSingleUser = async(req, res)=>{
 // Handler for creating a user
 const userSignUP = async (req, res) => {
     try {
-        const { name, email, phone, password, dob } = req.body;
+        const { name, email, phone, password } = req.body;
 
-        if (!name || !email || !phone || !password || !dob) {
+        if (!name || !email || !phone || !password ) {
             return res.status(400).json({ error: "All fields are required" });
         }
 
@@ -99,7 +99,7 @@ const userSignUP = async (req, res) => {
 
         const imgurl = await CloudUpload(img)
 
-        const response = await UserSchema.create({name, email, phone, image: imgurl.secure_url  , password, dob, otp});
+        const response = await UserSchema.create({name, email, phone, image: imgurl.secure_url  , password, otp});
 
         if(!response) return res.status(400).json({message: "Filed issue! user not created"});
 
@@ -187,7 +187,6 @@ const userLogin = async(req,res) =>{
       httpOnly: true,
       secure: true,
       sameSite: 'None', 
-      domain: '.mridulsinghsaklani.com',
       path:"/"
     };
 
@@ -216,7 +215,6 @@ const userLogout = async(req,res)=>{
       httpOnly: true,
       secure: true,
       sameSite: 'None',
-      domain: '.mridulsinghsaklani.com',
       path:"/"
     }
 

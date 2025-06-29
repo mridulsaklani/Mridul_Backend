@@ -25,14 +25,9 @@ const userSchema = new mongoose.Schema({
         type:String,
         require: true       
     },
-
-    dob:{
-        type: Date,
-        require: true
-    },
     image: {
         type: String,
-        require: true
+        
     },
     refreshToken:{
         type: String,
