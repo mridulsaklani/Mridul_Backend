@@ -94,7 +94,7 @@ const userSignUP = async (req, res) => {
 
       
         const otp = generateOTP();
-        console.log(req.file?.path)
+        
         const img = req.file?.path
 
         const imgurl = await CloudUpload(img)
