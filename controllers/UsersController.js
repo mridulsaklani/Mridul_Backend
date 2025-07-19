@@ -52,9 +52,9 @@ const generateOTP = ()=>{
 
 const getUsers = async (req, res) => {
   try {
-    const response = await UserSchema.find({}).select('-password -refreshToken').sort({createdAt: -1})
+    const response = await UserSchema.find({role:"USER"}).select('-password -refreshToken').sort({createdAt: -1})
     if(!response) return res.status(404).json({message: "Users not found"});
-    res.status(200).json(response);
+    res.status(200).json({users: response});
   }
   catch(error){
     console.error(error);
@@ -227,6 +227,23 @@ const userLogout = async(req,res)=>{
 }
 
 
+const deleteUser = async(req,res)=>{
+   try {
+    const id = req.params.id
+    if(!mongoose.Types.ObjectId.isValid(id)){
+      return res.status(401).json({message:"Unauthorized mongoose id"})
+    }
+    const response = await UserSchema.findByIdAndDelete(id);
+    if(!response) return res.status(400).json({message:"User is not deleted"})
+
+    return res.status(200).json({message:"User deleted successfully"})
+   } catch (error) {
+    console.error(error);
+    res.status(500).json({message: "Internal server error"})
+   }
+}
+
+
 
 module.exports = {
   getUsers,
@@ -235,6 +252,7 @@ module.exports = {
   userSignUP,
   userLogout,
   verifyOtp,
-  upload
+  upload,
+  deleteUser
 
 };
